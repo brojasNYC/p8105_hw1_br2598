@@ -7,24 +7,86 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
-## R Markdown
+## Problem 1
+* Create a data frame comprised of:
+    + a random sample of size 10 from a standard Normal distribution 
+    + a logical vector indicating whether elements of the sample are greater than 0
+    + a character vector of length 10 
+    + a factor vector of length 10, with 3 different factor “levels”
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+When taking the mean of each column in the dataframe, we notice that norm_samp, and "norm_samp_pos" return numeric values, as these logical values are treated as 1/0, and norm_samp is a series of numeric values.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+factor_vector and char_vec are not numeric or logical, and are factors and character vectors. Characters cannot be added or divided, thus it returns "NA", the same goes for factors.
 
-```{r cars}
-summary(cars)
+We can coerce these into being numeric as follows:
+
+as.numeric(r_samp_tbl[["norm_samp_pos"]])
+
+as.numeric(r_samp_tbl[["char_vec"]])
+
+as.numeric(r_samp_tbl[["factor_vector"]])
+
+This will convert the logical into true numerical values 0 & 1, the characters become NAs as they have no valid conversion, and the factor vectors are receive values 1 to 3 because 3 levels of factor, "high, medium and low" exist. Noted that coercing the factors into numeric would allow you to take the mean.
+
+```{r problem_1}
+set.seed(1337)
+
+r_samp_tbl = tibble(
+  norm_samp = rnorm(10),                       # random sample size 10, std normal~
+  factor_vector = (factor(c("high", "medium", "low", "high", "medium", "low", "high", "medium", "low", "high"))),
+  norm_samp_pos = norm_samp > 0,                                 # elements greater than zero
+  char_vec = character(10),                                      #char vec of length 10
+)
+
+r_samp_tbl
+
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+## Taking Means
+```{r problem_1_means}
+##Means
+mean(r_samp_tbl[["norm_samp"]])
+mean(r_samp_tbl[["factor_vector"]])
+mean(r_samp_tbl[["norm_samp_pos"]])
+mean(r_samp_tbl[["char_vec"]])
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Problem 2
+
+```{r penguin_load}
+data("penguins", package = "palmerpenguins")
+```
+
+The Palmer Penguin data, including mean flipper length, and the observation types with the number of recorded values can be summarized as follows:
+
+```{r penguins}
+summary(penguins)
+
+print(paste("Number of Columns:", ncol(penguins)))
+print(paste("Number of Rows:", nrow(penguins)))
+      
+```
+
+Visualized:
+```{r penguin_chart}
+# from http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/#a-colorblind-friendly-palette
+color_blind_palette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7") 
+
+
+ggplot(penguins, 
+       aes(x = bill_length_mm, y = flipper_length_mm, color = species)) + 
+       scale_color_manual(values= color_blind_palette) + 
+       geom_point(size = 1.5) + 
+       ggtitle("Anatomical variance of Palmer Archipelago Penguins") + 
+       xlab("bill length (mm)") + 
+       ylab("flipper length (mm)")
+
+ggsave("br2598_hw1_p8105_scatterplot.png")
+```
+
+
+
